@@ -1,7 +1,8 @@
 <%@ page import="java.util.*,dao.*,model.*" %>
 <%@ page import="javax.servlet.http.HttpSession" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page pageEncoding="UTF-8" %>
 <%
-    HttpSession session = request.getSession(false);
     if (session == null || session.getAttribute("usuarioLogado") == null) {
         response.sendRedirect("login.jsp");
         return;
