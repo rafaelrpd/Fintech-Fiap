@@ -1,0 +1,627 @@
+# Documentação da Aplicação Fintech
+
+## Índice
+
+- [Introdução](#introdução)
+- [Funcionalidades](#funcionalidades)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração e Instalação](#configuração-e-instalação)
+    - [1. Clonar o Repositório](#1-clonar-o-repositório)
+    - [2. Instalar o Java Development Kit (JDK)](#2-instalar-o-java-development-kit-jdk)
+    - [3. Instalar o Apache Tomcat](#3-instalar-o-apache-tomcat)
+    - [4. Instalar o Driver JDBC da Oracle](#4-instalar-o-driver-jdbc-da-oracle)
+    - [5. Configurar o Banco de Dados](#5-configurar-o-banco-de-dados)
+    - [6. Configurar o Projeto](#6-configurar-o-projeto)
+- [Executando a Aplicação](#executando-a-aplicação)
+- [Estrutura da Aplicação](#estrutura-da-aplicação)
+    - [1. Scripts de Banco de Dados](#1-scripts-de-banco-de-dados)
+    - [2. Data Access Objects (DAOs)](#2-data-access-objects-daos)
+    - [3. Servlets](#3-servlets)
+    - [4. Páginas JSP](#4-páginas-jsp)
+- [Expandindo as Entidades](#expandindo-as-entidades)
+    - [1. Modificando o Esquema do Banco de Dados](#1-modificando-o-esquema-do-banco-de-dados)
+    - [2. Atualizando os DAOs](#2-atualizando-os-daos)
+    - [3. Atualizando os Servlets](#3-atualizando-os-servlets)
+    - [4. Atualizando as Páginas JSP](#4-atualizando-as-páginas-jsp)
+- [Contribuindo](#contribuindo)
+- [Licença](#licença)
+- [Recursos Adicionais](#recursos-adicionais)
+- [Contato](#contato)
+
+---
+
+## Introdução
+
+Bem-vindo à **Aplicação Fintech**! Este é um aplicativo web Java projetado para ajudar os usuários a gerenciar suas finanças de forma eficaz, acompanhando fontes de receita, gastos, dívidas, investimentos e metas financeiras.
+
+Esta documentação fornece instruções detalhadas sobre como configurar, executar e expandir a aplicação. Seja você um desenvolvedor buscando contribuir ou um usuário querendo entender como a aplicação funciona, este guia é para você.
+
+## Funcionalidades
+
+- **Autenticação de Usuário**: Login e logout seguros.
+- **Gerenciar Fontes de Receita**: Criar, ler, atualizar e excluir fontes de receita.
+- **Gerenciar Gastos**: Operações CRUD completas para gastos.
+- **Gerenciar Dívidas**: Acompanhar dívidas com taxas de juros e períodos de pagamento.
+- **Gerenciar Investimentos**: Monitorar investimentos e retornos mensais.
+- **Gerenciar Metas Financeiras**: Definir e acompanhar o progresso em direção às metas financeiras.
+- **Dados Específicos do Usuário**: Cada usuário pode acessar e modificar apenas seus próprios dados.
+
+## Pré-requisitos
+
+Antes de começar, certifique-se de ter o seguinte software instalado:
+
+- **Java Development Kit (JDK) 22.0.2 ou superior**
+- **Apache Tomcat 9.0.96**
+- **Oracle Database 19c**
+- **Driver JDBC da Oracle (ojdbc11.jar)**
+- **Ambiente de Desenvolvimento Integrado (IDE)** **IntelliJ Community Edition**
+- **Git** (para clonar o repositório)
+- **Smart Cat** Intellij plugin para conseguir integrar o Tomcat com a IDE
+
+## Configuração e Instalação
+
+Siga estes passos para configurar a aplicação em sua máquina local.
+
+### 1. Clonar o Repositório
+
+Clone o repositório para sua máquina local usando o Git:
+
+```bash
+git clone https://github.com/rafaelrpd/Fintech-Fiap.git
+```
+
+### 2. Instalar o Java Development Kit (JDK)
+
+Baixe e instale o JDK 22.0.2 ou superior no [site da Oracle](https://www.oracle.com/br/java/technologies/javase-downloads.html).
+
+Verifique a instalação executando:
+
+```bash
+java -version
+```
+
+### 3. Instalar o Apache Tomcat
+
+Baixe o Apache Tomcat 9 no [site oficial](https://tomcat.apache.org/download-90.cgi).
+
+- **Link para Download:** [Apache Tomcat 9.0.96](https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.96/bin/apache-tomcat-9.0.96-windows-x64.zip)
+- Extraia o arquivo ZIP em um diretório de sua preferência.
+
+### 4. Instalar o Driver JDBC da Oracle
+
+Baixe o driver JDBC da Oracle `ojdbc11.jar`.
+
+- **Link para Download:** [Downloads do Driver JDBC da Oracle](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html)
+
+Coloque o arquivo `ojdbc11.jar` no diretório `lib` do seu projeto ou inclua-o no classpath da sua aplicação.
+
+### 5. Configurar o Banco de Dados
+
+#### 5.1. Criar o Esquema do Banco de Dados
+
+Utilize os scripts SQL fornecidos para criar o esquema do banco de dados e populá-lo com dados de exemplo.
+
+- **Localização dos Scripts:** `fintech/data/`
+
+#### 5.2. Executar o Script `dropTables.sql` (Opcional)
+
+Se você tiver tabelas existentes que possam causar conflitos, execute o script `dropTables.sql` para removê-las:
+
+```sql
+-- dropTables.sql
+
+DROP TABLE meta_financeira CASCADE CONSTRAINTS;
+DROP TABLE investimento CASCADE CONSTRAINTS;
+DROP TABLE divida CASCADE CONSTRAINTS;
+DROP TABLE gasto CASCADE CONSTRAINTS;
+DROP TABLE fonte_de_receita CASCADE CONSTRAINTS;
+DROP TABLE usuario CASCADE CONSTRAINTS;
+
+COMMIT;
+```
+
+#### 5.3. Executar o Script `initdb.sql`
+
+Execute o script `initdb.sql` para criar as tabelas e inserir dados de exemplo:
+
+```sql
+-- initdb.sql
+
+-- Criar tabela USUARIO
+CREATE TABLE usuario (
+    id NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+    nome VARCHAR2(100) NOT NULL,
+    email VARCHAR2(100) UNIQUE NOT NULL,
+    senha VARCHAR2(100) NOT NULL
+);
+
+-- Inserir dados de exemplo na tabela USUARIO
+INSERT INTO usuario (nome, email, senha) VALUES ('João Silva', 'joao.silva@example.com', 'senha123');
+-- Adicione mais usuários conforme necessário
+
+-- Criar outras tabelas (fonte_de_receita, gasto, divida, investimento, meta_financeira)
+-- Para o script completo, consulte o arquivo `initdb.sql` no repositório
+
+COMMIT;
+```
+
+Use um cliente SQL ou ferramenta de linha de comando para executar os scripts. Exemplos de ferramentas incluem **SQL*Plus**, **Oracle SQL Developer** ou **DBeaver**.
+
+### 6. Configurar o Projeto
+
+#### 6.1. Abrir o Projeto na sua IDE
+
+- Abra o repositório clonado em sua IDE (por exemplo, IntelliJ IDEA).
+
+#### 6.2. Configurar a Conexão com o Banco de Dados
+
+Atualize o arquivo `ConnectionFactory.java` com os detalhes da sua conexão com o banco de dados:
+
+```java
+// ConnectionFactory.java
+
+private static final String URL = "jdbc:oracle:thin:@localhost:1521:XE";
+private static final String USER = "seu_usuario_banco";
+private static final String PASSWORD = "sua_senha_banco";
+```
+
+- Substitua `seu_usuario_banco` e `sua_senha_banco` com suas credenciais reais.
+- Certifique-se de que a `URL` corresponda à configuração do seu banco de dados.
+- Tais dados de configuração do banco são possíveis de serem obtidos na Fase 1 - Cap 8 - Pdf.
+
+#### 6.3. Adicionar o Driver JDBC da Oracle ao Classpath
+
+- Na sua IDE, adicione o `ojdbc11.jar` ao classpath ou às bibliotecas do projeto.
+- No IntelliJ IDEA:
+    - Clique com o botão direito no projeto > **Abrir Configurações do Módulo** > **Bibliotecas** > **+** > Adicione o arquivo `ojdbc11.jar`.
+
+#### 6.4. Configurar o Apache Tomcat na sua IDE
+
+- **No IntelliJ IDEA:**
+    - Vá em **Executar > Editar Configurações**.
+    - Clique em **+** > **Tomcat Server > Local**.
+    - Configure o diretório de instalação do Tomcat.
+    - Defina o **Contexto da Aplicação** para `/Fintech` ou `/`.
+    - Configure as portas do servidor e da administração:
+        - **Porta do Servidor**: 8080
+        - **Porta do Admin**: 8005
+    - Adicione um **Artifact** para implantar:
+        - Vá para a aba **Deployment** > **+** > **Artifact** > Selecione `Fintech`.
+    - Para o **Classpath do Módulo**, selecione o módulo `Fintech`.
+    - Clique em **Aplicar** e depois em **OK** para salvar as configurações.
+
+#### 6.5. Compilar o Projeto
+
+- Use **Compilar > Compilar Projeto** para compilar a aplicação.
+
+## Executando a Aplicação
+
+1. **Inicie o Servidor Apache Tomcat:**
+
+    - Execute a configuração do Tomcat a partir da sua IDE.
+    - Monitore o console para quaisquer erros durante a inicialização.
+
+2. **Acesse a Aplicação em um Navegador:**
+
+    - Abra seu navegador web e navegue até:
+
+      ```
+      http://localhost:8080/Fintech
+      ```
+
+        - Substitua `/Fintech` pelo seu contexto de aplicação, se for diferente.
+
+3. **Faça Login Usando Credenciais de Exemplo:**
+
+    - Use um dos usuários de exemplo do script `initdb.sql`:
+
+        - **Email:** `joao.silva@example.com`
+        - **Senha:** `senha123`
+
+    - Substitua pelas suas próprias credenciais se você modificou os usuários.
+
+4. **Explore a Aplicação:**
+
+    - Navegue pelas diferentes funcionalidades:
+        - **Gerenciar Fontes de Receita**
+        - **Gerenciar Gastos**
+        - **Gerenciar Dívidas**
+        - **Gerenciar Investimentos**
+        - **Gerenciar Metas Financeiras**
+    - Adicione, edite e exclua registros.
+    - Verifique se os dados estão sendo salvos e recuperados corretamente.
+
+## Estrutura da Aplicação
+
+A aplicação segue o padrão Model-View-Controller (MVC):
+
+- **Model (Modelo):** Classes Java que representam os dados (Entidades).
+- **View (Visão):** Páginas JSP para a interface do usuário.
+- **Controller (Controle):** Servlets que manipulam requisições e respostas.
+
+### 1. Scripts de Banco de Dados
+
+- Localizados em `fintech/data/*.*.sql`.
+- Contêm `initdb.sql` e `dropTables.sql`.
+- Definem o esquema do banco de dados e dados iniciais.
+
+### 2. Data Access Objects (DAOs)
+
+- Localizados em `src/dao/*.*DAO.java`.
+- Fornecem métodos para interagir com o banco de dados.
+- Incluem classes como `UsuarioDAO`, `FonteDeReceitaDAO`, etc.
+- O único arquivo diferente é o ConnectionFactory.
+
+### 3. Servlets
+
+- Localizados em `src/servlet/*.*Servlet.java`.
+- Manipulam requisições e respostas HTTP.
+- Incluem `LoginServlet`, `FonteDeReceitaServlet`, etc.
+
+### 4. Páginas JSP
+
+- Localizadas em `fintech/webapp/*.*.jsp/`.
+- Fornecem a interface do usuário.
+- Incluem `login.jsp`, `home.jsp`, `fonteDeReceita.jsp`, etc.
+
+## Expandindo as Entidades
+
+Para expandir a aplicação com novas entidades ou modificar as existentes, siga estes passos:
+
+### 1. Modificando o Esquema do Banco de Dados
+
+- **Atualize os Scripts SQL:**
+
+    - Modifique o `initdb.sql` para adicionar novas tabelas ou alterar as existentes.
+    - Use comandos SQL apropriados (`CREATE TABLE`, `ALTER TABLE`).
+
+- **Exemplo:**
+
+  ```sql
+  -- Adicionando uma nova tabela 'Categoria'
+
+  CREATE TABLE categoria (
+      id NUMBER GENERATED BY DEFAULT ON NULL AS IDENTITY PRIMARY KEY,
+      nome VARCHAR2(100) NOT NULL,
+      usuario_id NUMBER NOT NULL,
+      CONSTRAINT fk_usuario_categoria FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE
+  );
+
+  -- Inserir dados de exemplo
+
+  INSERT INTO categoria (nome, usuario_id) VALUES ('Educação', 1);
+  ```
+
+- **Execute os Scripts Atualizados:**
+
+    - Execute os scripts para atualizar o esquema do banco de dados.
+    - Tenha cuidado com comandos `DROP TABLE` para evitar perda de dados.
+
+### 2. Atualizando os DAOs
+
+- **Crie ou Modifique Classes DAO:**
+
+    - Adicione uma nova classe DAO para a nova entidade (por exemplo, `CategoriaDAO`).
+    - Implemente métodos para operações CRUD (`insert`, `update`, `delete`, `getById`, `getByUsuarioId`).
+
+- **Exemplo:**
+
+  ```java
+  // CategoriaDAO.java
+
+  public class CategoriaDAO {
+      public void insert(Categoria categoria) {
+          String sql = "INSERT INTO categoria (nome, usuario_id) VALUES (?, ?)";
+          try (Connection connection = ConnectionFactory.getConnection();
+               PreparedStatement stmt = connection.prepareStatement(sql)) {
+              
+              stmt.setString(1, categoria.getNome());
+              stmt.setInt(2, categoria.getUsuarioId());
+              stmt.executeUpdate();
+              
+          } catch (SQLException e) {
+              System.out.println("Erro ao inserir categoria.");
+              e.printStackTrace();
+          }
+      }
+
+      public void update(Categoria categoria) {
+          String sql = "UPDATE categoria SET nome = ? WHERE id = ? AND usuario_id = ?";
+          try (Connection connection = ConnectionFactory.getConnection();
+               PreparedStatement stmt = connection.prepareStatement(sql)) {
+              
+              stmt.setString(1, categoria.getNome());
+              stmt.setInt(2, categoria.getId());
+              stmt.setInt(3, categoria.getUsuarioId());
+              stmt.executeUpdate();
+              
+          } catch (SQLException e) {
+              System.out.println("Erro ao atualizar categoria.");
+              e.printStackTrace();
+          }
+      }
+
+      public void delete(int id, int usuarioId) {
+          String sql = "DELETE FROM categoria WHERE id = ? AND usuario_id = ?";
+          try (Connection connection = ConnectionFactory.getConnection();
+               PreparedStatement stmt = connection.prepareStatement(sql)) {
+              
+              stmt.setInt(1, id);
+              stmt.setInt(2, usuarioId);
+              stmt.executeUpdate();
+              
+          } catch (SQLException e) {
+              System.out.println("Erro ao deletar categoria.");
+              e.printStackTrace();
+          }
+      }
+
+      public Categoria getById(int id) {
+          String sql = "SELECT * FROM categoria WHERE id = ?";
+          Categoria categoria = null;
+          try (Connection connection = ConnectionFactory.getConnection();
+               PreparedStatement stmt = connection.prepareStatement(sql)) {
+              
+              stmt.setInt(1, id);
+              ResultSet rs = stmt.executeQuery();
+              if (rs.next()) {
+                  categoria = new Categoria();
+                  categoria.setId(rs.getInt("id"));
+                  categoria.setNome(rs.getString("nome"));
+                  categoria.setUsuarioId(rs.getInt("usuario_id"));
+              }
+              
+          } catch (SQLException e) {
+              System.out.println("Erro ao buscar categoria por ID.");
+              e.printStackTrace();
+          }
+          return categoria;
+      }
+
+      public List<Categoria> getByUsuarioId(int usuarioId) {
+          String sql = "SELECT * FROM categoria WHERE usuario_id = ?";
+          List<Categoria> categorias = new ArrayList<>();
+          try (Connection connection = ConnectionFactory.getConnection();
+               PreparedStatement stmt = connection.prepareStatement(sql)) {
+              
+              stmt.setInt(1, usuarioId);
+              ResultSet rs = stmt.executeQuery();
+              while (rs.next()) {
+                  Categoria categoria = new Categoria();
+                  categoria.setId(rs.getInt("id"));
+                  categoria.setNome(rs.getString("nome"));
+                  categoria.setUsuarioId(rs.getInt("usuario_id"));
+                  categorias.add(categoria);
+              }
+              
+          } catch (SQLException e) {
+              System.out.println("Erro ao buscar categorias por usuário.");
+              e.printStackTrace();
+          }
+          return categorias;
+      }
+  }
+  ```
+
+- **Atualize DAOs Existentes, se Necessário:**
+
+    - Se a nova entidade estiver relacionada a entidades existentes, atualize os DAOs relacionados para lidar com os novos relacionamentos.
+
+### 3. Atualizando os Servlets
+
+- **Crie ou Modifique Classes Servlet:**
+
+    - Adicione um novo servlet para a entidade (por exemplo, `CategoriaServlet`).
+    - Mapeie o servlet para um padrão de URL usando `@WebServlet`.
+    - Implemente os métodos `doGet` e `doPost` para manipular requisições.
+
+- **Exemplo:**
+
+  ```java
+  // CategoriaServlet.java
+
+  package servlet;
+
+  import java.io.IOException;
+  import javax.servlet.*;
+  import javax.servlet.annotation.WebServlet;
+  import javax.servlet.http.*;
+
+  import dao.CategoriaDAO;
+  import model.Categoria;
+
+  @WebServlet("/categoria")
+  public class CategoriaServlet extends HttpServlet {
+
+      @Override
+      protected void doPost(HttpServletRequest request, HttpServletResponse response)
+              throws ServletException, IOException {
+
+          try {
+              // Verifica se o usuário está autenticado
+              HttpSession session = request.getSession(false);
+              if (session == null || session.getAttribute("usuarioId") == null) {
+                  response.sendRedirect("login.jsp");
+                  return;
+              }
+              int usuarioId = (Integer) session.getAttribute("usuarioId");
+
+              String action = request.getParameter("action");
+              CategoriaDAO categoriaDAO = new CategoriaDAO();
+
+              if ("Adicionar".equals(action)) {
+                  String nome = request.getParameter("nome");
+
+                  Categoria categoria = new Categoria();
+                  categoria.setNome(nome);
+                  categoria.setUsuarioId(usuarioId);
+
+                  categoriaDAO.insert(categoria);
+
+              } else if ("Atualizar".equals(action)) {
+                  int id = Integer.parseInt(request.getParameter("id"));
+                  String nome = request.getParameter("nome");
+
+                  Categoria categoria = new Categoria();
+                  categoria.setId(id);
+                  categoria.setNome(nome);
+                  categoria.setUsuarioId(usuarioId);
+
+                  categoriaDAO.update(categoria);
+              }
+
+              response.sendRedirect("categoria.jsp");
+          } catch (Exception e) {
+              e.printStackTrace();
+              response.sendRedirect("categoria.jsp?erro=true");
+          }
+      }
+
+      @Override
+      protected void doGet(HttpServletRequest request, HttpServletResponse response)
+              throws ServletException, IOException {
+          try {
+              // Verifica se o usuário está autenticado
+              HttpSession session = request.getSession(false);
+              if (session == null || session.getAttribute("usuarioId") == null) {
+                  response.sendRedirect("login.jsp");
+                  return;
+              }
+              int usuarioId = (Integer) session.getAttribute("usuarioId");
+
+              String action = request.getParameter("action");
+              CategoriaDAO categoriaDAO = new CategoriaDAO();
+
+              if ("Deletar".equals(action)) {
+                  int id = Integer.parseInt(request.getParameter("id"));
+                  categoriaDAO.delete(id, usuarioId);
+              }
+
+              response.sendRedirect("categoria.jsp");
+          } catch (Exception e) {
+              e.printStackTrace();
+              response.sendRedirect("categoria.jsp?erro=true");
+          }
+      }
+  }
+  ```
+
+### 4. Atualizando as Páginas JSP
+
+- **Crie ou Modifique Páginas JSP:**
+
+    - Adicione uma nova página JSP para a entidade (por exemplo, `categoria.jsp`).
+    - Implemente formulários para entrada de dados e tabelas para exibição de dados.
+    - Inclua links para as ações do servlet.
+
+- **Exemplo:**
+
+  ```jsp
+  <%@ page import="java.util.*,dao.*,model.*" %>
+  <%@ page import="javax.servlet.http.HttpSession" %>
+  <%
+      HttpSession session = request.getSession(false);
+      if (session == null || session.getAttribute("usuarioLogado") == null) {
+          response.sendRedirect("login.jsp");
+          return;
+      }
+      int usuarioId = (Integer) session.getAttribute("usuarioId");
+  %>
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>Categorias - Fintech</title>
+  </head>
+  <body>
+      <h1>Categorias</h1>
+      <% 
+          if (request.getParameter("erro") != null) { 
+      %>
+          <p style="color:red;">Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.</p>
+      <% 
+          } 
+      %>
+      <!-- Formulário para adicionar ou atualizar categoria -->
+      <%
+          String action = "Adicionar";
+          String nome = "";
+          String id = request.getParameter("id");
+          if (id != null) {
+              CategoriaDAO categoriaDAO = new CategoriaDAO();
+              Categoria categoria = categoriaDAO.getById(Integer.parseInt(id));
+              if (categoria != null && categoria.getUsuarioId() == usuarioId) {
+                  action = "Atualizar";
+                  nome = categoria.getNome();
+              } else {
+                  id = null; // Reseta o ID se a categoria não pertencer ao usuário
+              }
+          }
+      %>
+      <form action="categoria" method="post">
+          <input type="hidden" name="id" value="<%= id != null ? id : "" %>">
+          Nome: <input type="text" name="nome" value="<%= nome %>"><br>
+          <input type="submit" name="action" value="<%= action %>">
+      </form>
+  
+      <!-- Lista de categorias -->
+      <h2>Categorias Existentes</h2>
+      <%
+          CategoriaDAO categoriaDAO = new CategoriaDAO();
+          List<Categoria> categorias = categoriaDAO.getByUsuarioId(usuarioId);
+      %>
+      <table border="1">
+          <tr>
+              <th>Nome</th>
+              <th>Ações</th>
+          </tr>
+          <%
+              for (Categoria categoria : categorias) {
+          %>
+          <tr>
+              <td><%= categoria.getNome() %></td>
+              <td>
+                  <a href="categoria.jsp?id=<%= categoria.getId() %>">Editar</a>
+                  |
+                  <a href="categoria?action=Deletar&id=<%= categoria.getId() %>" onclick="return confirm('Tem certeza que deseja deletar?');">Deletar</a>
+              </td>
+          </tr>
+          <%
+              }
+          %>
+      </table>
+      <br>
+      <a href="home.jsp">Voltar para a página inicial</a>
+  </body>
+  </html>
+  ```
+
+## Contribuindo
+
+Se você deseja contribuir para o desenvolvimento da Aplicação Fintech, sinta-se à vontade para abrir issues ou enviar pull requests. Certifique-se de seguir as diretrizes do projeto para manter a consistência e qualidade do código.
+
+## Licença
+
+Este projeto é distribuído sob a licença MIT. Consulte o arquivo `LICENSE` para obter mais informações.
+
+## Recursos Adicionais
+
+- **Documentação do Java:** [https://docs.oracle.com/en/java/](https://docs.oracle.com/en/java/)
+- **Documentação do Tomcat:** [https://tomcat.apache.org/tomcat-9.0-doc/](https://tomcat.apache.org/tomcat-9.0-doc/)
+- **Documentação do Oracle Database:** [https://docs.oracle.com/en/database/](https://docs.oracle.com/en/database/)
+
+## Contato
+
+Caso tenha dúvidas ou sugestões, sinta-se à vontade para entrar em contato:
+
+- **Nome:** Abner Munhoz Barbosa
+- **Email:** abnermunhoz100@gmail.com
+
+- **Nome:** Diogo Neves e Silva
+- **Email:** connecteddover@gmail.com
+
+- **Nome:** Rafael Pereira Dias
+- **Email:** br.rafaeldias@gmail.com
+
+- **Nome:** Gabriel Resende de Sá 
+- **Email:** resendesag@gmail.com
+
