@@ -1,0 +1,24 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class ConnectionFactory {
+    private static final String URL = "jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL"; // connection string do banco
+    private static final String USERNAME = "RM556387"; // Seu RM assim: RM112233
+    private static final String PASSWORD = "100590"; // Sua senha de acesso ao portal (que é a mesma do banco)
+
+    static {
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Driver JDBC do Oracle não encontrado.");
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    }
+}

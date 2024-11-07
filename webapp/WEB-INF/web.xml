@@ -4,4 +4,11 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
     <!-- Configurações adicionais -->
+    <display-name>Fintech</display-name>
+
+    <!-- Configurações adicionais aqui -->
+
+    <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>
