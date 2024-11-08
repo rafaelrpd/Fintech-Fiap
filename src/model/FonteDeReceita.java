@@ -6,15 +6,26 @@ public class FonteDeReceita {
     private double valor;
     private int usuarioId;
 
+    // Construtor padrão
     public FonteDeReceita() {
-
     }
 
-    public FonteDeReceita(String descricao, double valor) {
+    // Construtor utilizado para inserção (3 parâmetros)
+    public FonteDeReceita(String descricao, double valor, int usuarioId) {
         this.descricao = descricao;
         this.valor = valor;
+        this.usuarioId = usuarioId;
     }
 
+    // Construtor utilizado para edição (4 parâmetros)
+    public FonteDeReceita(int id, String descricao, double valor, int usuarioId) {
+        this.id = id;
+        this.descricao = descricao;
+        this.valor = valor;
+        this.usuarioId = usuarioId;
+    }
+
+    // Getters e Setters
     public int getId() {
         return id;
     }

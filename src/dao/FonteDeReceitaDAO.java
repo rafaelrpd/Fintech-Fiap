@@ -3,7 +3,6 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.FonteDeReceita;
 
 public class FonteDeReceitaDAO {
@@ -12,24 +11,26 @@ public class FonteDeReceitaDAO {
     public void insert(FonteDeReceita receita) {
         String sql = "INSERT INTO fonte_de_receita (descricao, valor, usuario_id) VALUES (?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"})) {
 
+            // Definir os parâmetros de entrada
             stmt.setString(1, receita.getDescricao());
             stmt.setDouble(2, receita.getValor());
             stmt.setInt(3, receita.getUsuarioId());
+
+            // Executar a inserção
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                receita.setId(generatedKeys.getInt(1));
+            // Obter o ID gerado automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    receita.setId(generatedKeys.getInt(1));
+                }
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao inserir fonte de receita.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao inserir fonte de receita", e);
         }
     }
-
 
     // Método para obter todas as fontes de receita
     public List<FonteDeReceita> getAll() {
@@ -46,10 +47,8 @@ public class FonteDeReceitaDAO {
                 receita.setValor(rs.getDouble("valor"));
                 receitas.add(receita);
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter fontes de receita.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter fontes de receita", e);
         }
         return receitas;
     }
@@ -63,21 +62,21 @@ public class FonteDeReceitaDAO {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
                 receita = new FonteDeReceita();
                 receita.setId(rs.getInt("id"));
                 receita.setDescricao(rs.getString("descricao"));
                 receita.setValor(rs.getDouble("valor"));
+                receita.setUsuarioId(rs.getInt("usuario_id"));
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter fonte de receita pelo ID.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter fonte de receita pelo ID", e);
         }
         return receita;
     }
 
-    // Método para obter todas as fontes de receita pelo ID do usuário
+    // Método para obter uma fonte de receita pelo ID do usuário
     public List<FonteDeReceita> getByUsuarioId(int usuarioId) {
         List<FonteDeReceita> receitas = new ArrayList<>();
         String sql = "SELECT * FROM fonte_de_receita WHERE usuario_id = ?";
@@ -91,12 +90,11 @@ public class FonteDeReceitaDAO {
                 receita.setId(rs.getInt("id"));
                 receita.setDescricao(rs.getString("descricao"));
                 receita.setValor(rs.getDouble("valor"));
+                receita.setUsuarioId(rs.getInt("usuario_id"));
                 receitas.add(receita);
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter fontes de receita por usuário.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter fontes de receita por usuário", e);
         }
         return receitas;
     }
@@ -112,13 +110,10 @@ public class FonteDeReceitaDAO {
             stmt.setInt(3, receita.getId());
             stmt.setInt(4, receita.getUsuarioId());
             stmt.executeUpdate();
-
         } catch (SQLException e) {
-            System.out.println("Erro ao atualizar fonte de receita.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao atualizar fonte de receita", e);
         }
     }
-
 
     // Método para deletar uma fonte de receita
     public void delete(int id, int usuarioId) {
@@ -129,12 +124,8 @@ public class FonteDeReceitaDAO {
             stmt.setInt(1, id);
             stmt.setInt(2, usuarioId);
             stmt.executeUpdate();
-
         } catch (SQLException e) {
-            System.out.println("Erro ao deletar fonte de receita.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao deletar fonte de receita", e);
         }
     }
-
-
 }

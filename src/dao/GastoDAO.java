@@ -13,24 +13,25 @@ public class GastoDAO {
     public void insert(Gasto gasto) {
         String sql = "INSERT INTO gasto (descricao, valor, usuario_id) VALUES (?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"})) {
 
             stmt.setString(1, gasto.getDescricao());
             stmt.setDouble(2, gasto.getValor());
             stmt.setInt(3, gasto.getUsuarioId());
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                gasto.setId(generatedKeys.getInt(1));
+            // Obter o ID gerado automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    gasto.setId(generatedKeys.getInt(1));
+                }
             }
-
         } catch (SQLException e) {
             System.out.println("Erro ao inserir gasto.");
             e.printStackTrace();
+            throw new RuntimeException("Erro ao inserir gasto", e);
         }
     }
-
 
     // Método para obter todos os gastos
     public List<Gasto> getAll() {
@@ -64,13 +65,14 @@ public class GastoDAO {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
                 gasto = new Gasto();
                 gasto.setId(rs.getInt("id"));
                 gasto.setDescricao(rs.getString("descricao"));
                 gasto.setValor(rs.getDouble("valor"));
+                gasto.setUsuarioId(rs.getInt("usuario_id"));
             }
-
         } catch (SQLException e) {
             System.out.println("Erro ao obter gasto pelo ID.");
             e.printStackTrace();
