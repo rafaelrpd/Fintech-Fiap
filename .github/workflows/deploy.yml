@@ -1,0 +1,37 @@
+# This workflow will build a Java project with Ant
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-ant
+
+name: Java CI
+
+on:
+  push:
+    branches: [ "deploy-branch" ]
+  pull_request:
+    branches: [ "deploy-branch" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '22.0.2'
+        distribution: 'temurin'
+    - name: Build with Ant
+      run: |
+          ant clean
+          ant build
+          
+    - name: Deploy to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      run: |
+        curl -X POST \
+          -H 'Authorization: Bearer $RENDER_API_KEY' \
+          -H 'Content-Type: application/json' \
+          --data '{"clearCache": true}' \
+          https://api.render.com/v1/services/srv-csmokao8fa8c73a9m43g/deploys
