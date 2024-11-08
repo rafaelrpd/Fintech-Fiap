@@ -152,12 +152,9 @@ public class UsuarioDAO {
                 usuario.setEmail(rs.getString("email"));
                 usuario.setSenha(rs.getString("senha"));
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao validar usuário.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao validar usuário", e);
         }
         return usuario;
     }
-
 }

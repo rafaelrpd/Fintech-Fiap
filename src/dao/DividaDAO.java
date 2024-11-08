@@ -12,7 +12,7 @@ public class DividaDAO {
     public void insert(Divida divida) {
         String sql = "INSERT INTO divida (descricao, valor, taxa_juros, meses_para_pagar, usuario_id) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"})) {
 
             stmt.setString(1, divida.getDescricao());
             stmt.setDouble(2, divida.getValor());
@@ -21,17 +21,16 @@ public class DividaDAO {
             stmt.setInt(5, divida.getUsuarioId());
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                divida.setId(generatedKeys.getInt(1));
+            // Obter o ID gerado automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    divida.setId(generatedKeys.getInt(1));
+                }
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao inserir dívida.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao inserir dívida", e);
         }
     }
-
 
     // Método para obter todas as dívidas
     public List<Divida> getAll() {
@@ -74,6 +73,7 @@ public class DividaDAO {
                 divida.setValor(rs.getDouble("valor"));
                 divida.setTaxaDeJuros(rs.getDouble("taxa_juros"));
                 divida.setMesesParaPagar(rs.getInt("meses_para_pagar"));
+                divida.setUsuarioId(rs.getInt("usuario_id"));
             }
 
         } catch (SQLException e) {
@@ -102,10 +102,8 @@ public class DividaDAO {
                 divida.setUsuarioId(rs.getInt("usuario_id"));
                 dividas.add(divida);
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter dívidas por usuário.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter dívidas por usuário", e);
         }
         return dividas;
     }

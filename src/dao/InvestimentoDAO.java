@@ -12,7 +12,7 @@ public class InvestimentoDAO {
     public void insert(Investimento investimento) {
         String sql = "INSERT INTO investimento (descricao, valor, rendimento_mensal, usuario_id) VALUES (?, ?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"})) {
 
             stmt.setString(1, investimento.getDescricao());
             stmt.setDouble(2, investimento.getValor());
@@ -20,11 +20,12 @@ public class InvestimentoDAO {
             stmt.setInt(4, investimento.getUsuarioId());
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                investimento.setId(generatedKeys.getInt(1));
+            // Obter o ID gerado automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    investimento.setId(generatedKeys.getInt(1));
+                }
             }
-
         } catch (SQLException e) {
             System.out.println("Erro ao inserir investimento.");
             e.printStackTrace();
@@ -71,11 +72,10 @@ public class InvestimentoDAO {
                 investimento.setDescricao(rs.getString("descricao"));
                 investimento.setValor(rs.getDouble("valor"));
                 investimento.setRendimentoMensal(rs.getDouble("rendimento_mensal"));
+                investimento.setUsuarioId(rs.getInt("usuario_id"));
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter investimento pelo ID.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter investimento pelo ID", e);
         }
         return investimento;
     }

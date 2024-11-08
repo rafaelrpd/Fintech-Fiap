@@ -14,6 +14,8 @@ public class GastoServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         try {
             // Verifica se o usuário está autenticado
@@ -29,7 +31,13 @@ public class GastoServlet extends HttpServlet {
 
             if ("Adicionar".equals(action)) {
                 String descricao = request.getParameter("descricao");
-                double valor = Double.parseDouble(request.getParameter("valor"));
+                String valorStr = request.getParameter("valor").trim();
+
+                // Remover espaços extras e garantir que o valor esteja no formato correto
+                valorStr = valorStr.replaceAll(",", ".").replaceAll("[^\\d.]", "");
+
+                // Converter o valor para double
+                double valor = Double.parseDouble(valorStr);
 
                 Gasto gasto = new Gasto();
                 gasto.setDescricao(descricao);
@@ -41,7 +49,10 @@ public class GastoServlet extends HttpServlet {
             } else if ("Atualizar".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 String descricao = request.getParameter("descricao");
-                double valor = Double.parseDouble(request.getParameter("valor"));
+                String valorStr = request.getParameter("valor").trim();
+
+                valorStr = valorStr.replaceAll(",", ".").replaceAll("[^\\d.]", "");
+                double valor = Double.parseDouble(valorStr);
 
                 Gasto gasto = new Gasto();
                 gasto.setId(id);
@@ -53,7 +64,11 @@ public class GastoServlet extends HttpServlet {
             }
 
             response.sendRedirect("gastos.jsp");
+        } catch (NumberFormatException e) {
+            System.out.println("Erro ao converter valor para double: " + e.getMessage());
+            response.sendRedirect("gastos.jsp?erro=true");
         } catch (Exception e) {
+            System.out.println("Erro ao processar a solicitação.");
             e.printStackTrace();
             response.sendRedirect("gastos.jsp?erro=true");
         }
@@ -62,6 +77,9 @@ public class GastoServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         try {
             // Verifica se o usuário está autenticado
             HttpSession session = request.getSession(false);

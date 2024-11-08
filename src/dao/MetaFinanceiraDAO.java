@@ -12,7 +12,7 @@ public class MetaFinanceiraDAO {
     public void insert(MetaFinanceira meta) {
         String sql = "INSERT INTO meta_financeira (descricao, valor_objetivo, valor_atual, usuario_id) VALUES (?, ?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"})) {
 
             stmt.setString(1, meta.getDescricao());
             stmt.setDouble(2, meta.getValorObjetivo());
@@ -20,11 +20,12 @@ public class MetaFinanceiraDAO {
             stmt.setInt(4, meta.getUsuarioId());
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                meta.setId(generatedKeys.getInt(1));
+            // Obter o ID gerado automaticamente
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    meta.setId(generatedKeys.getInt(1));
+                }
             }
-
         } catch (SQLException e) {
             System.out.println("Erro ao inserir meta financeira.");
             e.printStackTrace();
@@ -71,11 +72,10 @@ public class MetaFinanceiraDAO {
                 meta.setDescricao(rs.getString("descricao"));
                 meta.setValorObjetivo(rs.getDouble("valor_objetivo"));
                 meta.setValorAtual(rs.getDouble("valor_atual"));
+                meta.setUsuarioId(rs.getInt("usuario_id"));
             }
-
         } catch (SQLException e) {
-            System.out.println("Erro ao obter meta financeira pelo ID.");
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao obter meta financeira pelo ID", e);
         }
         return meta;
     }

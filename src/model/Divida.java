@@ -8,15 +8,7 @@ public class Divida {
     private int mesesParaPagar;
     private int usuarioId;
 
-    public Divida() {
-    }
-
-    public Divida(String descricao, double valor, double taxaDeJuros, int mesesParaPagar) {
-        this.descricao = descricao;
-        this.valor = valor;
-        this.taxaDeJuros = taxaDeJuros;
-        this.mesesParaPagar = mesesParaPagar;
-    }
+    public Divida() {}
 
     public int getId() {
         return id;

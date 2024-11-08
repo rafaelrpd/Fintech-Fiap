@@ -17,7 +17,7 @@
 <body>
     <h1>Fontes de Receita</h1>
     <%
-        if (request.getParameter("erro") != null) {
+        if ("true".equals(request.getParameter("erro"))) {
     %>
         <p style="color:red;">Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.</p>
     <%
@@ -43,8 +43,8 @@
     %>
     <form action="fonteDeReceita" method="post">
         <input type="hidden" name="id" value="<%= id != null ? id : "" %>">
-        Descrição: <input type="text" name="descricao" value="<%= descricao %>"><br>
-        Valor: <input type="text" name="valor" value="<%= valor %>"><br>
+        Descrição: <input type="text" name="descricao" value="<%= descricao %>" required><br>
+        Valor: <input type="number" step="0.01" name="valor" value="<%= valor %>" required><br>
         <input type="submit" name="action" value="<%= action %>">
     </form>
 

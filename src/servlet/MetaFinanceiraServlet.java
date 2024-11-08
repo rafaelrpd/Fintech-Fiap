@@ -14,6 +14,8 @@ public class MetaFinanceiraServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         try {
             // Verifica se o usuário está autenticado
@@ -66,6 +68,9 @@ public class MetaFinanceiraServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         try {
             // Verifica se o usuário está autenticado
             HttpSession session = request.getSession(false);

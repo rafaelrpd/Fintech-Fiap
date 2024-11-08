@@ -14,6 +14,8 @@ public class DividaServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         try {
             // Verifica se o usuário está autenticado
@@ -28,10 +30,13 @@ public class DividaServlet extends HttpServlet {
             DividaDAO dividaDAO = new DividaDAO();
 
             if ("Adicionar".equals(action)) {
-                String descricao = request.getParameter("descricao");
-                double valor = Double.parseDouble(request.getParameter("valor"));
-                double taxaJuros = Double.parseDouble(request.getParameter("taxaJuros"));
+                String descricao = request.getParameter("descricao").trim();
+                String valorStr = request.getParameter("valor").replace(",", ".");
+                String taxaJurosStr = request.getParameter("taxaJuros").replace(",", ".");
                 int mesesParaPagar = Integer.parseInt(request.getParameter("mesesParaPagar"));
+
+                double valor = Double.parseDouble(valorStr);
+                double taxaJuros = Double.parseDouble(taxaJurosStr);
 
                 Divida divida = new Divida();
                 divida.setDescricao(descricao);
@@ -44,10 +49,13 @@ public class DividaServlet extends HttpServlet {
 
             } else if ("Atualizar".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
-                String descricao = request.getParameter("descricao");
-                double valor = Double.parseDouble(request.getParameter("valor"));
-                double taxaJuros = Double.parseDouble(request.getParameter("taxaJuros"));
+                String descricao = request.getParameter("descricao").trim();
+                String valorStr = request.getParameter("valor").replace(",", ".");
+                String taxaJurosStr = request.getParameter("taxaJuros").replace(",", ".");
                 int mesesParaPagar = Integer.parseInt(request.getParameter("mesesParaPagar"));
+
+                double valor = Double.parseDouble(valorStr);
+                double taxaJuros = Double.parseDouble(taxaJurosStr);
 
                 Divida divida = new Divida();
                 divida.setId(id);
@@ -70,8 +78,10 @@ public class DividaServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         try {
-            // Verifica se o usuário está autenticado
             HttpSession session = request.getSession(false);
             if (session == null || session.getAttribute("usuarioId") == null) {
                 response.sendRedirect("login.jsp");
