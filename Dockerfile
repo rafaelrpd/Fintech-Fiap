@@ -1,5 +1,5 @@
 # Usar uma imagem base do OpenJDK com suporte ao Tomcat
-FROM tomcat:9.0.96-jdk22-openjdk
+FROM tomcat:9.0.96-jdk21-temurin
 
 # Definir o diretório de trabalho dentro do container
 WORKDIR /usr/local/tomcat/webapps/ROOT
@@ -14,4 +14,4 @@ COPY lib/ojdbc11.jar /usr/local/tomcat/lib/
 EXPOSE 8080
 
 # Comando para iniciar o Tomcat
-CMD ["catalina.sh
+CMD ["catalina.sh", "run"]
